@@ -1,20 +1,21 @@
-from fastapi import FastAPI, HTTPException, Header
-from pydantic import BaseModel
-from typing import List, Sequence, Optional
-from dotenv import load_dotenv
+import asyncio
+import json
 import os
+import logging
+import time
+import uvicorn
+import uuid
+
+from fastapi import FastAPI, HTTPException, Header
+from fastapi.responses import StreamingResponse
+from dotenv import load_dotenv
 from ibm_watsonx_ai import Credentials
 from langchain_ibm import ChatWatsonx
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.graph import END, MessageGraph
-import uvicorn
-from fastapi.responses import StreamingResponse
-import uuid
-import time
-import json
-import logging
-import asyncio
+from pydantic import BaseModel
+from typing import List, Sequence, Optional
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -213,5 +214,4 @@ async def chat_completions(
         return response_data
 
 if __name__ == "__main__":
-    
-    uvicorn.run(app, host="0.0.0.0", port=8081)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
