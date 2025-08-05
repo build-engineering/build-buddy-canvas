@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Watsonx credentials and model setup
-if not os.getenv("WATSONX_APIKEY") or not os.getenv("WATSONX_PROJECT_ID")   :
+if not os.getenv("WATSONX_APIKEY") or not os.getenv("WATSONX_PROJECT_ID"):
     raise ValueError("WATSONX_APIKEY and WATSONX_PROJECT_ID must be set in the environment variables.")
 
 MODEL_ID = "mistralai/mistral-large"
