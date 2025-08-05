@@ -24,10 +24,13 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Watsonx credentials and model setup
+if not os.getenv("WATSONX_APIKEY") or not os.getenv("WATSONX_PROJECT_ID")   :
+    raise ValueError("WATSONX_APIKEY and WATSONX_PROJECT_ID must be set in the environment variables.")
+
 MODEL_ID = "mistralai/mistral-large"
 credentials = Credentials(
     url="https://us-south.ml.cloud.ibm.com",
-    api_key=os.getenv("WATSONX_APIKEY")
+    api_key=os.getenv("WATSONX_API_KEY")
 )
 project_id = os.getenv("WATSONX_PROJECT_ID")
 
@@ -122,11 +125,11 @@ builder.add_edge(REFLECT, GENERATE)
 graph = builder.compile()
 
 # FastAPI endpoint
-@app.post("/")
+@app.get("/")
 async def root(request: dict):
     return hello_world(request)
 
-@app.post("/hello-world")
+@app.get("/hello-world")
 async def hello_world(request: dict):
     try:
         return {"response": f"hello world: {request.name}"}
