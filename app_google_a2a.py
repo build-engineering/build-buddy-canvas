@@ -1,10 +1,11 @@
-# server_agent.py
-from fastapi import FastAPI, Request
-from pydantic import BaseModel, Field
 import json
+import os
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Literal
 
-app = FastAPI()
+app = FastAPI() 
 
 # --- Pydantic Models for A2A types ---
 # Define Pydantic models for A2A structures for better type hinting and validation
@@ -36,13 +37,33 @@ class TaskResponse(BaseModel):
     status: TaskStatus
     history: List[Message]
 
+
+def get_code_engine_urls():
+    public_url, private_url = None, None
+    try:
+        # These env variables are automatically injected by Code Engine
+        app_name = os.environ['CE_APP']  # Get the application name.
+        subdomain = os.environ['CE_SUBDOMAIN']  # Get the subdomain.
+        domain = os.environ['CE_DOMAIN']  # Get the domain name.
+
+        public_url = f"https://{app_name}.{subdomain}.{domain}/"
+        private_url = f"https://{app_name}.{subdomain}.private.{domain}/" # Construct the private URL.
+    except KeyError as e:
+        print(f"Error: Required environment variable {e} not found.")
+        print("Application may be running locally otherwise required env vars are missing.")
+    return public_url, private_url
+
 # --- Agent Card Endpoint ---
 @app.get("/.well-known/agent.json")
 async def get_agent_card():
+    public_url, _ = get_code_engine_urls()
+    if not public_url:
+        public_url = "http://localhost:8000/"  # Fallback for local development
+
     agent_card = {
         "name": "FastAPIEchoAgent",
         "description": "An A2A agent built with FastAPI that echoes your messages.",
-        "url": "http://localhost:8000/",  # Update if running on a different port
+        "url": public_url,  # Update if running on a different port
         "version": "1.0.0",
         "defaultInputModes": ["text"],
         "defaultOutputModes": ["text"],
@@ -95,6 +116,6 @@ async def send_task(task_request: TaskRequest):
     return response_task
 
 if __name__ == "__main__":
-    import uvicorn
     # Run with: uvicorn server_agent:app --reload --port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
