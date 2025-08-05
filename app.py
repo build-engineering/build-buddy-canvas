@@ -127,13 +127,14 @@ graph = builder.compile()
 
 # FastAPI endpoint
 @app.get("/")
-async def root(request: Request):
-    return hello_world(request)
+#async def root(request: Request):
+async def root():
+    return hello_world()
 
 @app.get("/hello-world")
-async def hello_world(request: Request):
+async def hello_world():
     try:
-        return {"response": f"hello world: {request.name}"}
+        return {"response": f"hello world"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing request.  Expected request with name parameter with value: {str(e)}")
 
