@@ -12,5 +12,5 @@ COPY . .
 
 # Ensure port here matches the one exposed above
 #CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
-CMD ["uvicorn", "app:app_google_a2a", "--host", "0.0.0.0", "--port", "8080"]
-#CMD ["uvicorn", "app:app_wxo_agent_connect", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app_google_a2a:app", "--host", "0.0.0.0", "--port", "8080"]
+#CMD ["uvicorn", "app_wxo_agent_connect:app", "--host", "0.0.0.0", "--port", "8080"]
