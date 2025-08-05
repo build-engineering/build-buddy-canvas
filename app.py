@@ -6,7 +6,7 @@ import time
 import uvicorn
 import uuid
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from ibm_watsonx_ai import Credentials
@@ -127,11 +127,11 @@ graph = builder.compile()
 
 # FastAPI endpoint
 @app.get("/")
-async def root(request: dict):
+async def root(request: Request):
     return hello_world(request)
 
 @app.get("/hello-world")
-async def hello_world(request: dict):
+async def hello_world(request: Request):
     try:
         return {"response": f"hello world: {request.name}"}
     except Exception as e:

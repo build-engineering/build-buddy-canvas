@@ -105,3 +105,22 @@ curl -X POST "http://localhost:8000/chat/completions" \
 -H "Content-Type: application/json" \
 -d '{"messages": [{"role": "user", "content": "Write about AI innovation"}]}'
 ```
+
+#### Local Deployment
+Navigate to the root folder:
+1. Create venv:
+```bash
+python3 -m venv venv 
+```
+2. Activate venv:
+```bash
+source ./venv/bin/activate
+```
+3. Install python libraries:
+```bash
+python3 -m pip install -r requirements.txt
+```
+4. Navigate back to project root:
+```bash
+python app.py
+```
