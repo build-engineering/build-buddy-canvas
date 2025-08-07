@@ -87,4 +87,5 @@ if __name__ == '__main__':
         extended_agent_card=specific_extended_agent_card,
     )
 
-    uvicorn.run(server.build(), host='0.0.0.0', port=8080)
+    app = server.build()
+    uvicorn.run(app, host='0.0.0.0', port=8080)
