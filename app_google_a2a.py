@@ -1,121 +1,90 @@
-import json
 import os
+import uvicorn
 
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Literal
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+from a2a.types import (
+    AgentCapabilities,
+    AgentCard,
+    AgentSkill,
+)
+from agent_executor import (
+    HelloWorldAgentExecutor,  # type: ignore[import-untyped]
+)
 
-app = FastAPI() 
+if __name__ == '__main__':
+    skill = AgentSkill(
+        id='hello_world',
+        name='Returns hello world',
+        description='just returns hello world',
+        tags=['hello world'],
+        examples=['hi', 'hello world'],
+    )
 
-# --- Pydantic Models for A2A types ---
-# Define Pydantic models for A2A structures for better type hinting and validation
-class TextPart(BaseModel):
-    type: Literal["text"] = "text"
-    text: str
+    extended_skill = AgentSkill(
+        id='super_hello_world',
+        name='Returns a SUPER Hello World',
+        description='A more enthusiastic greeting, only for authenticated users.',
+        tags=['hello world', 'super', 'extended'],
+        examples=['super hi', 'give me a super hello'],
+    )
 
-class Message(BaseModel):
-    role: Literal["user", "agent"]
-    parts: List[TextPart]
+    def get_code_engine_urls():
+        public_url, private_url = None, None
+        try:
+            # These env variables are automatically injected by Code Engine
+            app_name = os.environ['CE_APP']  # Get the application name.
+            subdomain = os.environ['CE_SUBDOMAIN']  # Get the subdomain.
+            domain = os.environ['CE_DOMAIN']  # Get the domain name.
 
-class TaskRequestParams(BaseModel):
-    id: str = Field(description="Unique ID for the task")
-    sessionId: str = Field(description="Session ID for the conversation")
-    message: Message
-
-class TaskRequest(BaseModel):
-    jsonrpc: str = "2.0"
-    method: Literal["tasks/send"]
-    params: TaskRequestParams
-
-class TaskStatus(BaseModel):
-    state: Literal["completed", "failed", "running", "cancelled"]
-    message: Message
-
-class TaskResponse(BaseModel):
-    id: str
-    sessionId: str
-    status: TaskStatus
-    history: List[Message]
+            public_url = f"https://{app_name}.{subdomain}.{domain}/"
+            private_url = f"https://{app_name}.{subdomain}.private.{domain}/" # Construct the private URL.
+        except KeyError as e:
+            print(f"Error: Required environment variable {e} not found.")
+            print("Application may be running locally otherwise required env vars are missing.\n")
+        return public_url, private_url
 
 
-def get_code_engine_urls():
-    public_url, private_url = None, None
-    try:
-        # These env variables are automatically injected by Code Engine
-        app_name = os.environ['CE_APP']  # Get the application name.
-        subdomain = os.environ['CE_SUBDOMAIN']  # Get the subdomain.
-        domain = os.environ['CE_DOMAIN']  # Get the domain name.
-
-        public_url = f"https://{app_name}.{subdomain}.{domain}/"
-        private_url = f"https://{app_name}.{subdomain}.private.{domain}/" # Construct the private URL.
-    except KeyError as e:
-        print(f"Error: Required environment variable {e} not found.")
-        print("Application may be running locally otherwise required env vars are missing.")
-    return public_url, private_url
-
-# --- Agent Card Endpoint ---
-@app.get("/.well-known/agent.json")
-async def get_agent_card():
     public_url, _ = get_code_engine_urls()
     if not public_url:
-        public_url = "http://localhost:8000/"  # Fallback for local development
-
-    agent_card = {
-        "name": "FastAPIEchoAgent",
-        "description": "An A2A agent built with FastAPI that echoes your messages.",
-        "url": public_url,  # Update if running on a different port
-        "version": "1.0.0",
-        "defaultInputModes": ["text"],
-        "defaultOutputModes": ["text"],
-        "capabilities": {
-            "streaming": False
-        },
-        "authentication": {
-            "schemes": ["none"]
-        },
-        "skills": [
-            {
-                "id": "echo_message",
-                "name": "Echo Message",
-                "description": "Echoes the received message using FastAPI.",
-                "tags": ["echo", "reply", "fastapi"],
-                "inputModes": ["text"],
-                "outputModes": ["text"],
-                "examples": ["fastapi echo hello", "fastapi repeat after me"]
-            }
-        ]
-    }
-    return agent_card
-
-# --- Task Handling Endpoint ---
-@app.post("/tasks/send", response_model=TaskResponse)
-async def send_task(task_request: TaskRequest):
-    user_message_text = task_request.params.message.parts[0].text
-    
-    # Simple echo logic
-    agent_reply_text = f"FastAPI Echo says: You sent: {user_message_text}"
-    agent_reply_message = Message(
-        role="agent",
-        parts=[TextPart(text=agent_reply_text)]
+        public_url = "http://localhost:8080/"  # Fallback for local development
+    url=public_url,
+    public_agent_card = AgentCard(
+        name='Hello World Agent',
+        description='Just a hello world agent',
+        url=public_url,
+        version='1.0.0',
+        default_input_modes=['text'],
+        default_output_modes=['text'],
+        capabilities=AgentCapabilities(streaming=True),
+        skills=[skill],  # Only the basic skill for the public card
+        supports_authenticated_extended_card=True,
     )
 
-    # Construct the response Task object
-    response_task = TaskResponse(
-        id=task_request.params.id,
-        sessionId=task_request.params.sessionId,
-        status=TaskStatus(
-            state="completed",
-            message=agent_reply_message
-        ),
-        history=[
-            task_request.params.message,
-            agent_reply_message
-        ]
+    specific_extended_agent_card = public_agent_card.model_copy(
+        update={
+            'name': 'Hello World Agent - Extended Edition',  # Different name for clarity
+            'description': 'The full-featured hello world agent for authenticated users.',
+            'version': '1.0.1',  # Could even be a different version
+            # Capabilities and other fields like url, default_input_modes, default_output_modes,
+            # supports_authenticated_extended_card are inherited from public_agent_card unless specified here.
+            'skills': [
+                skill,
+                extended_skill,
+            ],  # Both skills for the extended card
+        }
     )
-    
-    return response_task
 
-if __name__ == "__main__":
-    # Run with: uvicorn server_agent:app --reload --port 8000
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    request_handler = DefaultRequestHandler(
+        agent_executor=HelloWorldAgentExecutor(),
+        task_store=InMemoryTaskStore(),
+    )
+
+    server = A2AStarletteApplication(
+        agent_card=public_agent_card,
+        http_handler=request_handler,
+        extended_agent_card=specific_extended_agent_card,
+    )
+
+    uvicorn.run(server.build(), host='0.0.0.0', port=8080)

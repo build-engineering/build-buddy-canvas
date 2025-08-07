@@ -1,6 +1,7 @@
+a2a-sdk
 fastapi
 langchain-ibm
-langgraph==0.3.1
+langgraph
 pydantic
 python-dotenv
 uvicorn
