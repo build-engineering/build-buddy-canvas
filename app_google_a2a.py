@@ -47,10 +47,10 @@ def get_code_engine_urls():
 
 public_url, _ = get_code_engine_urls()
 if not public_url:
-    public_url = "http://localhost:8080/"  # Fallback for local development
+    public_url = "http://localhost:8000/"  # Fallback for local development
 url=public_url,
 public_agent_card = AgentCard(
-    name='Hello World Agent',
+    name='A2A Hello World Agent on IBM Servless',
     description='Just a hello world agent',
     url=public_url,
     version='1.0.0',
@@ -90,4 +90,4 @@ app = server.build()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host='0.0.0.0', port=8080)
+    uvicorn.run(app, host='0.0.0.0', port=8000)

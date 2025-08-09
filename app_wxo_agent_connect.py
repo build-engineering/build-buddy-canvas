@@ -8,6 +8,7 @@ import uuid
 
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from ibm_watsonx_ai import Credentials
 from langchain_ibm import ChatWatsonx
@@ -51,6 +52,7 @@ llm = ChatWatsonx(
 
 # Initialize FastAPI app
 app = FastAPI(title="LinkedIn Post Generator API")
+app.mount("/", StaticFiles(directory="applications", html=True), name="hosted applications")
 
 # Define request model
 class ChatRequest(BaseModel):
@@ -215,4 +217,4 @@ async def chat_completions(
         return response_data
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

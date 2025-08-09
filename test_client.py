@@ -23,9 +23,8 @@ async def main() -> None:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)  # Get a logger instance
 
-    # --8<-- [start:A2ACardResolver]
-
-    base_url = 'http://localhost:8080'
+    #base_url = 'http://localhost:8000'
+    base_url = "https://build-buddy-canvas-google-a2a-0.1yp49uvvm8h0.us-south.codeengine.appdomain.cloud"
 
     async with httpx.AsyncClient() as httpx_client:
         # Initialize A2ACardResolver
@@ -34,8 +33,6 @@ async def main() -> None:
             base_url=base_url,
             # agent_card_path uses default, extended_agent_card_path also uses default
         )
-        # --8<-- [end:A2ACardResolver]
-
         # Fetch Public Agent Card and Initialize Client
         final_agent_card_to_use: AgentCard | None = None
 
