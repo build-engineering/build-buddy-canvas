@@ -50,9 +50,9 @@ llm = ChatWatsonx(
     params=parameters,
 )
 
+
 # Initialize FastAPI app
 app = FastAPI(title="LinkedIn Post Generator API")
-app.mount("/", StaticFiles(directory="applications", html=True), name="hosted applications")
 
 # Define request model
 class ChatRequest(BaseModel):
