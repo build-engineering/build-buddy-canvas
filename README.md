@@ -106,7 +106,7 @@ curl -X POST "http://localhost:8000/chat/completions" \
 -d '{"messages": [{"role": "user", "content": "Write about AI innovation"}]}'
 ```
 
-#### Local Deployment
+#### Local Terminal Deployment
 Navigate to the root folder:
 1. Create venv:
 ```bash
@@ -123,4 +123,15 @@ python3 -m pip install -r requirements.txt
 4. Navigate back to project root:
 ```bash
 python app.py
+```
+
+#### Local Container Deployment
+Ensure Rancher Desktop is running:
+1. Build image:
+```bash
+docker build -t canvas_server:v0.1 .
+```
+2. Deploy and run image:
+```bash
+docker run -d -p 8080:8080 --name canvas-server canvas_server:v0.1
 ```
