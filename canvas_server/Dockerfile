@@ -11,5 +11,4 @@ EXPOSE 8000
 COPY . .
 
 # Ensure port here matches the one exposed above
-CMD ["uvicorn", "app_google_a2a:app", "--host", "0.0.0.0", "--port", "8000"]
-#CMD ["uvicorn", "app_wxo_agent_connect:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "canvas_server:app", "--host", "0.0.0.0", "--port", "8000"]
