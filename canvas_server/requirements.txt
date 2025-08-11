@@ -1,0 +1,8 @@
+a2a-sdk
+fastapi
+langchain-ibm
+langgraph
+pydantic
+python-dotenv
+uvicorn
+
